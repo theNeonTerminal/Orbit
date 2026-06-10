@@ -1,0 +1,81 @@
+DOCS TO REFER:
+Google Gemini API: https://ai.google.dev/gemini-api/docs
+Arduino ESP32 Core: 
+ESP32 websockets library: 
+Adafruit SSD 1306 library: 
+Python websockets: 
+OLED Robo Eyes library: 
+Gemini TTS: https://ai.google.dev/gemini-api/docs/speech-generation
+Gemini STT: https://ai.google.dev/gemini-api/docs/audio
+
+Brief Technical Working: ESP32 streams Microphone audio to server and server processes the audio input and sends back an audio output along with
+
+Client:
+
+Orbit Hardware:
+- ESP32 at its core
+- INMP441 I2S Mic
+- MAX98357A Amplifier for speaker
+- touch sensor x1
+- IR proximity sensor x2
+- Servo Motor x2
+- L293D Motor Driver x1
+- 0.96" SSD1306 OLED display
+
+Orbit is a physical presence of a remote server, which receives audio input from orbit, processes it and sends back audio data along with a JSON object which will be interpreted by orbit and call functions accordingly.
+
+ESP32 and Websockets part:
+Whenever Orbit is booted up, it opens up a new connection with the server. Now Orbit/Client will stream audio data to server for the time it is turned on, NO PROCESSING HAPPENS ON BOARD WITH ESP32, ALL THE AUDIO PROCESSING PART TAKES PLACE IN THE SERVER. 
+The ESP32 always streams the audio data form the I2S Microphone to the server as long as it is powered on. 
+
+ESP32 and Sensors/display/motors:
+ESP32 runs all the displays (OLED SSD1306), motors (servos and motors connected to L293D) and sensor data (IR proximity, Touch sensor) are processed by ESP32 on board.
+
+1. IR proximity sensors for drop detection, when high (ie: floor/desk exactly below robot) move normal, when LOW (ie: nothing below robot) Stop the robot from moving only in that detection
+There  will be 2 IR proximity sensors, 1 connected in front and one in back, both will be HIGH, when floor/desk is detected then stop the direction motor from moving
+2. OLED display: To display text, emotions from roboEyes library and other custom made animations
+3. Servo: 2 servos one connected to its arm, to be able to express its emotions and one connected to its head to able to rotate his head on the y axis, not x or z
+4. Motor Driver to Control motors
+5. Mic and Speaker already explained
+
+
+Server:
+Python will handle server side stuff. Servers only task is to handle websockets connections, send data to Gemini API, audio and AI stuff. 
+
+-----------------------------------------------------------------------
+
+Orbit hardware: EPS32 at its core, INMP441 Microphone, MAX98357A Amplidfier for Speaker, along with sensor integration (refer to client working for more detials)
+
+Orbit is a physical presence of a remote server, which receives audio input from orbit, processes it and sends back audio data along with a JSON object which will be interpreted by orbit and call functions accordingly.
+
+Orbit will have a wake word detection "Orbit" which will wake up the server and then server transcribes the voice input given by user, then once the line ends (either 10 second timeout or 5 second silence). Once the prompt by the user is given, then the server sends the prompt to the client to display on the OLED display and also to the Gemini API for a result. The result is then converted into an aduio.wav via OpenAI whisper and sent back to the client along with a JSON object.
+
+Server Detailed Working Principal:
+Server is written in python, primarily uses websockets (handle server requests and reponses) , google gen-ai (to generate an effective result) along with OpenAI whisper (for stt and tts for the received voice input), along with dependencies/companion libraries
+Pipeline: Whenever Orbit is booted up and it sends a signal to the server to initiate the connection. Once the connection is initiated, then the server uses a {low resource usage wake word detection pipeline}. Once the wake word is heard from the client (Orbit in this case), the server starts stt via OpenAI whisper, which listens to the users voice and transcribes it. To mark the end of the users request, the server interpretes a 5 second silence followed by the user
+User: "Orbit"
+Server: Detects wake word and starts OpenAI whisper
+User: "Who is the Prime Minister of India?" {then a 5 second silence}
+Server: interpretes silence and then ends this and final transcriptions looks like this: "Who is the Prime Minister of India?"
+NOTE: Server has a max input of 10 seconds, it, after 10 seconds of activity/inactivity, it automatically closes the line and sends it to OpenAI whisper for stt. Also make sure to add variables for these timeouts and not hard coded values
+
+Now, the server sends this prompt to the Gemini API which produces a result and also sends the client the exact line to display on the screen. Now the server creates/updates a JSON object with the following structure:
+
+{
+  "input": "Who is the Prime Minister of India", // prompt given by the user
+  "result": "Narendra Modi is the Primie Minister of India", // output generated by GEMINI Api
+  "functions to be called": []
+}
+
+This JSON is sent to the client along with an audio file in a .wav format, this audio.wav is directly streamed to the client, this audio.wav is the tts generated via OpenAI whisper (text: result given by Gemini API) and the client then captures the audio data and JSON object which it then uses for processing
+
+In short: wake word -> server wakes up and starts listening -> 5 second silence marks end of line -> server transcribes voice -> servers sends transcribed text to gemini API -> server then generates an audio.wav along with a JSON object which is send back to the client
+
+Once the communication is a success, the server then again goes to "sleep mode", ie, {low resource intensive wake word detection} and the process repeats every time the wake work is called
+
+Make sure to create functions for every step mentioned, if needed, you can also break the code into modules if it is easier to maintain
+
+
+CLIENT Working:
+Client Audio Streaming Specifications: PCM 16-bit signed, Mono, 16kHz, I2S Microphone
+

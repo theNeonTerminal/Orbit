@@ -1,0 +1,5 @@
+YOU MUST NOT DO ANY OF THE FOLLOWING THINGS
+You must not take any major decision by yourself. You should always clarify/ask the user before taking any major decision, like adding or removing features, making slight changes in functionality, etc
+YOU MUST treat this as a step by step guide to building this. Any ambiguity or doubt must be clarified by user, if any step feels incomplete or dangerous, then you MUST ask user to clarify it
+You must NOT make any significant thinking step towards coding this project. In simple terms, if you face a problem with CODING, like errors, bugs, etc, then you should fix it on your own, but if you face issue with PROGRAMMING, then the user MUST clarify it, say the user want to execute an action that needs a lot of memory, far beyond ESP32s capability, then you should WARN and CLARIFY it from the user, not make any decisions yourself. NOTE: PROGRAMMING != CODING
+

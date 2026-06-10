@@ -1,0 +1,14 @@
+Orbit is a AI companion desk robot
+Orbit is powered by an ESP32 and the ESP32 connects to the users WiFi and then it records and sends audio data it gets via its mic, sends it to the server and produces a voice result
+Orbit has an OLED display, which will be used to display its eyes and in/output text.
+Orbit runs on the GEMINI api, it has it own wake word "Orbit". Whenever its wake word is called out by the user, orbit then starts transcripting what the user tells, considers silence as end of prompt, then it sends it the GEMINI api which produces a short result and then its converted to aduio output by the server and returned to orbit, which then speaks it out loud
+Orbit being a robot will also move around and explore his surroundings dues to his wheels. It might or might not be able to accurately detect the direction of the source of the sound, but it will try to move or face towards the source
+
+Primary Features:
+- 2 anti drop IR proximity sensors
+- 0.96" OLED display to display eyes and other stats
+- Wheels to move around and explore
+- Speaker to communicate
+- A touch sensor to take physical input from the user
+- A small arm under his control to interact with the user
+- A movable head

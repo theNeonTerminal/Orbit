@@ -7,6 +7,7 @@ Python websockets:
 OLED Robo Eyes library: 
 Gemini TTS: https://ai.google.dev/gemini-api/docs/speech-generation
 Gemini STT: https://ai.google.dev/gemini-api/docs/audio
+Porcupine Wake word: https://github.com/picovoice/porcupine
 
 Brief Technical Working: ESP32 streams Microphone audio to server and server processes the audio input and sends back an audio output along with
 
@@ -26,7 +27,7 @@ Orbit is a physical presence of a remote server, which receives audio input from
 
 ESP32 and Websockets part:
 Whenever Orbit is booted up, it opens up a new connection with the server. Now Orbit/Client will stream audio data to server for the time it is turned on, NO PROCESSING HAPPENS ON BOARD WITH ESP32, ALL THE AUDIO PROCESSING PART TAKES PLACE IN THE SERVER. 
-The ESP32 always streams the audio data form the I2S Microphone to the server as long as it is powered on. 
+The ESP32 always streams the audio data form the I2S Microphone to the server as long as it is powered on. The server runs on python an uses a porcupine wake word detection to listen for the wake word "Orbit" or any other word which it is configured to listen for. The server once detects the wake word, will send a JSON object to the ESP32 to display the text "Listening..." or any other configured word on the OLED display. For more details, refer to server working for this part. Once the server receives "stop" signal, it will then send another JSON object to display the transcribed text on the OLED display. Now the server processes the transcribed text and returns a JSON object along with a .wav audio file streamed which the ESP32 will catch like an internet radio and stream it via the speaker connected to the MAX98357A amplifier. The OLED also shows the output text or call a function if input from server via JSON Object is received.
 
 ESP32 and Sensors/display/motors:
 ESP32 runs all the displays (OLED SSD1306), motors (servos and motors connected to L293D) and sensor data (IR proximity, Touch sensor) are processed by ESP32 on board.
@@ -37,7 +38,6 @@ There  will be 2 IR proximity sensors, 1 connected in front and one in back, bot
 3. Servo: 2 servos one connected to its arm, to be able to express its emotions and one connected to its head to able to rotate his head on the y axis, not x or z
 4. Motor Driver to Control motors
 5. Mic and Speaker already explained
-
 
 Server:
 Python will handle server side stuff. Servers only task is to handle websockets connections, send data to Gemini API, audio and AI stuff. 

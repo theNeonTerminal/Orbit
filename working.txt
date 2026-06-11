@@ -40,6 +40,14 @@ There  will be 2 IR proximity sensors, 1 connected in front and one in back, bot
 4. Motor Driver to Control motors
 5. Mic and Speaker already explained
 
+ESP32 functions:
+1. display_text(str: text): it receives one argument and simply prints out the text on a new line on the OLED display.
+2. display_time(int: time_offset): this function simply fetches the time from the internet for a given place, time_offset in seconds is given by gemini via JSON for the appropriate place.
+3. set_timer(int: mins, int: secs): User can set a max time of 1hour, this function is special because it is asynchronous and the user can again ask the assistant while the timer runs, the following 2 functions help it to properly function. After the timer ends, the ESP32 will send signal to serve and server will stream beep.wav to the ESP32 so indicate the timer has ended and then again return to the robo eyes. This function must be optimized in code to take in account for the other 2 supplement functions given.
+4. pause_timer(bool: paused): User can ask ai assistant to Pause the timer OR use the built in touch sensor to pause the timer, simply invert the state of the timer, 1 means paused and 0 means running.
+5. runTimer_bg(): This function takes no argument, and simply runs the timer in the background to free the OLED display to display something else (when the user asks something while the timer is running then this function will be executed to follow the steps: display Listening and then the users prompt and the output given by the model).
+6. show_weather(int: temp, bool: hot/cold, bool: unit): This is a custom function created by the user which displays the weather with cool graphics. bool hot or cold: 0 is hot, 1 is cold (threshold: 25 deg C). Unit is 0: Celsius (default) 1: Fahrenheight, bool because its easier to process than strings and we have only 2 values here
+
 ESP32 side example code to receive and "use" JSON data: (refer to server side JSON formatting for a better view)
 for(JsonObject action : actions)
 {

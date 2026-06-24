@@ -1,3 +1,13 @@
-ESP32/Client Side code:
+Coding Requirements
 
+- Use Python 3.12+
+- Use asyncio everywhere possible.
+- Use type hints.
+- Use dataclasses where appropriate.
+- Use logging instead of print().
+- Avoid global variables.
+- Separate configuration from implementation.
+- Functions should be short and single-purpose.
+- Comment only where necessary.
+- Use descriptive variable names.
 

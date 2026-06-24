@@ -3,3 +3,22 @@ You must not take any major decision by yourself. You should always clarify/ask 
 YOU MUST treat this as a step by step guide to building this. Any ambiguity or doubt must be clarified by user, if any step feels incomplete or dangerous, then you MUST ask user to clarify it
 You must NOT make any significant thinking step towards coding this project. In simple terms, if you face a problem with CODING, like errors, bugs, etc, then you should fix it on your own, but if you face issue with PROGRAMMING, then the user MUST clarify it, say the user want to execute an action that needs a lot of memory, far beyond ESP32s capability, then you should WARN and CLARIFY it from the user, not make any decisions yourself. NOTE: PROGRAMMING != CODING
 
+Do NOT
+
+- Hardcode API keys.
+- Hardcode configuration values.
+- Block the asyncio event loop.
+- Use busy waiting.
+- Duplicate code.
+- Mix websocket logic with Gemini logic.
+- Mix display logic with networking logic.
+  
+Whenever a library, algorithm, or implementation choice is made, briefly explain why it was chosen over reasonable alternatives.
+If any part of the specification is ambiguous, do not invent behavior.
+
+Instead:
+
+1. Clearly identify the ambiguity.
+2. Explain the available implementation options.
+3. State which option you recommend and why.
+4. Continue implementation only after that decision.

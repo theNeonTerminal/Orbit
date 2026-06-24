@@ -48,7 +48,25 @@ ESP32 functions:
 5. runTimer_bg(): This function takes no argument, and simply runs the timer in the background to free the OLED display to display something else (when the user asks something while the timer is running then this function will be executed to follow the steps: display Listening and then the users prompt and the output given by the model).
 6. show_weather(int: temp, bool: hot/cold, bool: unit): This is a custom function created by the user which displays the weather with cool graphics. bool hot or cold: 0 is hot, 1 is cold (threshold: 25 deg C). Unit is 0: Celsius (default) 1: Fahrenheight, bool because its easier to process than strings and we have only 2 values here
 
--- please insert ESP32 sensor data processing, how will and when will it move, other than websockets part explained clearly
+Emotions shown by Orbit based on situation:
+1. Normal: Normal rectangular/square eyes with plain face.
+2. Thinking: A thinking face or some graphics which convey the message "processing"/"thinking"
+3. Bored: Waiting to get pat on the touch sensor.
+4. Happy: Shown once pat on the touch sensor.
+
+Sensor Integration:
+1. IR sensors: Anti Drop sensors, when high, desk in underneath, keep moving, once LOW, immediately stop motors to prevent fall.
+2. Touch Sensor: Deactivated during a processing, like thinking or speaking output. Once hihg, Orbit shows Happy emotion and thats it
+3. Bored: Waiting to get pat on the touch sensor.
+4. Happy: Shown once pat on the touch sensor.
+
+Sensor Integration:
+1. IR sensors: Anti Drop sensors, when high, desk in underneath, keep moving, once LOW, immediately stop motors to prevent fall.
+2. Touch Sensor: Deactivated during a processing, like thinking or speaking output. Once hihg, Orbit shows Happy emotion and thats it.
+3. Servo Motors: 1 for moving his head up and down, the other for moving his small arm connected to him, based on factors, say once happy, it can move it up and down once, covering +90 and -90 degree, or in any other occassion or when told by user.
+
+NOTE: For these, the OLED display must be updated first before the audio is spoken out, so that the user can follow the OLED and audio simultaneously
+Audio FORMAT: PCM, 16-bit, mono, 16 kHz, little endian, 1024-sample chunks
 
 ESP32 side example code to receive and "use" JSON data: (refer to server side JSON formatting for a better view)
 for(JsonObject action : actions)
@@ -72,6 +90,20 @@ for(JsonObject action : actions)
         );
     }
 }
+
+
+----------------------------------------------------------------------------------------------
+
+
+State Of the Machine:
+IDLE (wakeword detection) -(Wake word detected)-> Server: sends JSON to client to stop moving and change OLED text to listening -(max 10s or 5s silence)-> STT is performed by server & Gemini API, JSON sent to Client to change text to input given -> Server & Gemini APi Processes transcribed text and send back a JSON object to client along with .wav audio streaming captured by client -> IDLE (wakeword detection)
+
+FOR ESP32:
+Normally it would simply roam around the place, while following IR sensor readings and sending mic data to server, then the server does its job of wakeword detection.
+
+
+----------------------------------------------------------------------------------------------
+
 
 Server:
 Python will handle server side stuff. Servers only task is to handle websockets connections, send data to Gemini API, audio and AI stuff. 
@@ -145,11 +177,45 @@ Server working in brief: Server opens a connection whenever the ESP32 boots up, 
 NOTE: All audio processing will be handled by GEMINI audio processing as given in the DOCS to refer. 
 
 Libraries Used:
-1. Python Websockets:
-2. Gemini Gen-AI for python:
-3. Porcupine Wake word Detection:
-4. python dotenv:
+1. Python Websockets: https://pypi.org/project/websockets/
+2. Gemini Gen-AI for python: https://ai.google.dev/gemini-api/docs
+3. Porcupine Wake word Detection: https://picovoice.ai/products/voice/wake-word/
+4. python dotenv: https://pypi.org/project/python-dotenv/
 5. Dependencies
+6. PyAudio: https://pypi.org/project/PyAudio/
+
+Wake Word Detection Specs: English only, a few phrases (given below), a low power as possible, fully in the server, no 3rd party
+Wake Word phrases: "Hey Orbit", "Hello Orbit", "Orbit"
+
+Once the wake word is detected, the server sends a JSON object to the ESP32 to stop moving and starting listening to user, also while displaying the "Listening" text on the OLED, then the server process as given above and sends back a wav audio
+NOTE: Unless the user specifically mentions one of the following - keep the max gemini output limit to less than or equal to 15 words
+Exceptional Cases: User says "Explain in full detail" -> 35 words, "Tell more (next time)" -> Another 35 words
 
 
+----------------------------------------------------------------------------------------------
 
+Error Handling:
+The OLED display on the client clearly shows Connecting to Wifi, and then Connection to server, if both are successful, then it runs, if any fails, it should show in the display that which one failed, and instruct the user to restart orbit (given code is correct, there still could be issues)
+
+If the STT or TTS returns gibberish or output at all, then the user will be shown it, for all cases, before asking the gemini API for the transcribed text, users will have a 3s time to view the transcribed data and touch the touch sensor to discard the reading, here the server send the JSON to take orbit back to IDLE (usually sent after successful voice output ends) and orbit returns to normal mode giving the user a seconds chance to dictate.
+In case if the audio is not transmitted effectively, then orbit simply shows the text and not speaks out loud for the output
+
+If connection is lost Mid way, do the same, show the User that connection is lost and reboot the system.
+
+
+----------------------------------------------------------------------------------------------
+
+
+Testing Requirements
+
+Each module should be independently testable.
+
+Provide:
+
+- Unit tests where appropriate.
+- Mock websocket client.
+- Mock Gemini responses.
+- Mock microphone input.
+- Mock ESP32 client.
+
+Ensure every module can be tested without physical hardware where possible.

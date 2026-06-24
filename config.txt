@@ -1,0 +1,44 @@
+Configuration for Orbit, make a separate config.py file for this, clearly define variables, make this part the most modular.
+
+----------------------------------------------------------------------------------------------
+
+CONFIGURATION
+
+Network
+- SERVER_HOST
+- SERVER_PORT
+- RECONNECT_DELAY = 5 seconds
+
+Audio
+- SAMPLE_RATE = 16000
+- CHANNELS = 1
+- SAMPLE_WIDTH = 16-bit
+- CHUNK_SIZE = 1024
+
+Wake Word
+- Wake words:
+    - Orbit
+    - Hey Orbit
+    - Hello Orbit
+
+Recording
+- SILENCE_TIMEOUT = 5 seconds
+- MAX_RECORDING_DURATION = 10 seconds
+- TRANSCRIPTION_REVIEW_TIME = 3 seconds
+
+Gemini
+- DEFAULT_MAX_OUTPUT_WORDS = 15
+- DETAILED_OUTPUT_WORDS = 35
+
+Robot
+- MAX_TIMER = 3600 seconds
+- DEFAULT_WEATHER_THRESHOLD = 25°C
+
+Servo
+- HEAD_MIN_ANGLE: 0deg
+- HEAD_MAX_ANGLE: 45deg
+- ARM_MIN_ANGLE: 0deg
+- ARM_MAX_ANGLE: 90deg
+
+Logging
+- LOG_LEVEL = issue for later, can safely ignore this
